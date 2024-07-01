@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 
 // Controller function for user signup
 const signup_controller = async (req, res, next) => {
+
+  console.log('request coming....!')
   try {
     const body = req.body;
 

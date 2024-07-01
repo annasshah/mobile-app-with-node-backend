@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     auth:false,
-    loading:false,
+    loading:true,
     profile:null
 
 }

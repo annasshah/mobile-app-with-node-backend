@@ -1,15 +1,19 @@
 
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native'
 import React, { useState } from 'react'
 import auth from '@react-native-firebase/auth'
 import { useDispatch } from 'react-redux'
 import { authAction } from '../store/slices/authSlice'
+import { signup_service } from '../services/auth_services'
+import { useNavigation } from '@react-navigation/native'
 
 
 export const Signup = () => {
 
     const [data, setData] = useState({})
     const dispatch = useDispatch()
+
+    const navigation = useNavigation()
 
 
     const on_change_handle = (field, value) => {
@@ -19,48 +23,72 @@ export const Signup = () => {
     }
 
 
-    const submit_handle = () => [
-        auth().createUserWithEmailAndPassword(data.email, data.password)
-            .then((res) => {
-                console.log('User account created & signed in!');
-                dispatch(authAction({auth:true, profile: res}))
-            })
-            .catch(error => {
-                if (error.code === 'auth/email-already-in-use') {
-                    console.log('That email address is already in use!');
-                }
+    const submit_handle = async () => {
 
-                if (error.code === 'auth/invalid-email') {
-                    console.log('That email address is invalid!');
-                }
+        console.log('running')
 
-                console.error(error);
-            })
 
-    ]
+       try {
+        const res =await signup_service(data)
 
-    // console.log(data)
+        if(res) {
+            navigation.navigate('Login')
+        }
+
+       console.log({res:res.data})
+       
+    } catch (error) {
+           console.log({error})
+        
+       }
+
+
+    }
+
+
+
+    const goToLoginPage = () => {
+        navigation.navigate('Login')
+    }
+
 
 
 
     return (
         <View style={styles.container}>
 
-            <View style={{ gap: 20 }}>
+            <ScrollView style={{ gap: 20 }}>
+                <View style={{marginVertical:20}}>
                 <Text style={styles.title}>
                     Signup
                 </Text>
+                </View>
                 <View style={styles.input_container}>
+                    <TextInput onChangeText={(e) => on_change_handle('username', e)} style={styles.input} placeholder='Enter Username' />
+                    <TextInput onChangeText={(e) => on_change_handle('first_name', e)} style={styles.input} placeholder='Enter First name' />
+                    <TextInput onChangeText={(e) => on_change_handle('last_name', e)} style={styles.input} placeholder='Enter Last name' />
+                    <TextInput onChangeText={(e) => on_change_handle('profile_image', e)} style={styles.input} placeholder='Set profile image' />
                     <TextInput onChangeText={(e) => on_change_handle('email', e)} style={styles.input} placeholder='Enter email address' />
                     <TextInput onChangeText={(e) => on_change_handle('password', e)} style={styles.input} placeholder='Enter password' secureTextEntry={true} />
                 </View>
 
-                <TouchableOpacity onPress={submit_handle} style={styles.button}>
+                <TouchableOpacity  onPress={submit_handle} style={styles.button}>
                     <Text style={styles.button_text}>
                         Signup
                     </Text>
                 </TouchableOpacity>
-            </View>
+
+
+                <View style={{marginTop:10, alignItems:'center', justifyContent:'center', gap:2}}>
+                    <Text>
+                        Already have account <TouchableOpacity onPress={goToLoginPage}>
+                            <Text>
+                                Login Now
+                            </Text>
+                        </TouchableOpacity>
+                    </Text>
+                </View>
+            </ScrollView>
 
         </View>
     )
@@ -94,6 +122,7 @@ const styles = StyleSheet.create({
         borderRadius: 10
     },
     button: {
+        marginTop:20,
         backgroundColor: '#7cacf8',
         paddingVertical: 15,
         borderRadius: 10

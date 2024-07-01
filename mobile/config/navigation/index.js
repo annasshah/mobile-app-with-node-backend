@@ -10,6 +10,9 @@ import { Loader } from '../../assets/Loader'
 import auth from "@react-native-firebase/auth"
 import { authAction } from '../../store/slices/authSlice'
 import { Create_Post } from '../../screens/Create_Post'
+import { check_auth_service } from '../../services/auth_services'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { save_tokens_constant } from '../../utils/constants'
 
 const Stack = createNativeStackNavigator()
 export const NavigationApp = () => {
@@ -17,18 +20,44 @@ export const NavigationApp = () => {
 
   const dispatch = useDispatch()
 
-  useEffect(() => {
+  // const check_initial_auth =
 
-    auth().onAuthStateChanged((user)=>{
-      console.log(user)
+  useEffect(() => {
+    //  iife ----->
+    ;( async () => {
+
+      const auth_token = await AsyncStorage.getItem(save_tokens_constant)  || ''
+
+     if(auth_token){
+      try {
+        const res = await check_auth_service()
+
+        if(res.data){
+          dispatch(authAction({auth:true, profile: res.data.data}))
+        }
+      } catch (error) {
+        dispatch(authAction({auth:false, profile:null}))
+      }
+     }
+     else{
+      dispatch(authAction({auth:false, profile:null}))
+     }
+  
+    })();
+
+
+    // check_initial_auth()
+
+    // auth().onAuthStateChanged((user)=>{
+    //   console.log(user)
       
-      if(user){
-        dispatch(authAction({auth:true, profile: user}))
-      }
-      else{
-        dispatch(authAction({auth:false, profile: null}))
-      }
-    })
+    //   if(user){
+    //     dispatch(authAction({auth:true, profile: user}))
+    //   }
+    //   else{
+    //     dispatch(authAction({auth:false, profile: null}))
+    //   }
+    // })
   }, [])
   
 
